@@ -1,6 +1,11 @@
 package studio.papercube.library.simplelogger
 
+import java.io.PrintWriter
+import java.io.StringWriter
+
 abstract class Logger {
+    open var enabled = true
+
     abstract fun v(tag: String?, msg: String)
     abstract fun i(tag: String?, msg: String)
     abstract fun w(tag: String?, msg: String)
@@ -21,6 +26,29 @@ abstract class Logger {
     open fun e(msg: String) {
         e(null, msg)
     }
+
+    open fun e(e: Throwable) {
+        e(null, e.detailedString)
+    }
+
+    open fun e(tag: String? = null, msg: String? = null, e: Throwable) {
+        if (msg == null) {
+            e(tag, e.detailedString)
+        } else {
+            e(tag, msg)
+            e(tag, e.detailedString)
+        }
+    }
+
+
+    private val Throwable.detailedString: String
+        get() {
+            val stringWriter = StringWriter()
+            val printWriter = PrintWriter(stringWriter)
+            this.printStackTrace(printWriter)
+            printWriter.close()
+            return stringWriter.toString()
+        }
 
     abstract fun log(logEvent: LogEvent)
     open fun stop() {}

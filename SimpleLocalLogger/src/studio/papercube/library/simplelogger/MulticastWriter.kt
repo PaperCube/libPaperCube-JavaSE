@@ -13,6 +13,8 @@ open class MulticastWriter() : Writer() {
         this.writers.addAll(writers)
     }
 
+    constructor(vararg writers:Writer) : this(writers.toList())
+
     override fun write(cbuf: CharArray?, off: Int, len: Int) {
         withCurrentlyHeldWriters { it.write(cbuf, off, len) }
     }
