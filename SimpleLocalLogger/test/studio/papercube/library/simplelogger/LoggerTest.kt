@@ -2,7 +2,9 @@ package studio.papercube.library.simplelogger
 
 import org.junit.Test
 import java.io.File
+import java.io.StringWriter
 import java.util.*
+import java.util.concurrent.LinkedTransferQueue
 import kotlin.system.measureNanoTime
 import kotlin.system.measureTimeMillis
 
@@ -23,7 +25,9 @@ class LoggerTest {
     fun testMultiThread() {
         val tempDir = File(System.getProperty("java.io.tmpdir"))
         val tempFile = File(tempDir, "test.log.txt")
-        val logger = AsyncSimpleLogger(tempFile.writer())
+        val writer = StringWriter()
+        val logger = AsyncSimpleLogger(writer)
+//        val logger = AsyncSimpleLogger(tempFile.writer())
         (1..100).map { i ->
             Thread {
                 val start = System.currentTimeMillis()
@@ -58,5 +62,32 @@ class LoggerTest {
         println("Logger stopped in $exitHangUp milliseconds")
 
         println(tempFile.absolutePath)
+    }
+
+    @Test
+    fun testLinkedQueue() {
+        val queue = LinkedTransferQueue<TestObj>()
+        for (i in 1..100) queue.offer(TestObj())
+        var completedCycles = 0
+        while (true) {
+            for (i in 1..100) {
+                queue.offer(TestObj())
+            }
+            for (i in 1..100) {
+                queue.take()
+            }
+
+            completedCycles++
+        }
+    }
+
+    class TestObj {
+        companion object {
+            var serialCounter: Long = 0
+        }
+
+        private val serial = serialCounter++
+
+        override fun toString() = "TestObj #$serial"
     }
 }
