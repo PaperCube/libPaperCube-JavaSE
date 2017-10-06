@@ -3,13 +3,18 @@ package studio.papercube.library.simplelogger
 import java.io.PrintWriter
 import java.io.Writer
 import java.time.LocalDateTime
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 open class AsyncSimpleLogger(writer: Writer) : Logger() {
     private val printWriter = PrintWriter(AsyncWriter(writer), true)
+    protected val lock = ReentrantLock(true)
 
     override fun log(logEvent: LogEvent) {
-        val (time, level, content, tag) = logEvent
-        printWriter.println("#-- ${time.toLocalDate()} ${time.toLocalTime()} [$level][$tag] : $content")
+        lock.withLock {
+            val (time, level, content, tag) = logEvent
+            printWriter.println("#-- ${time.toLocalDate()} ${time.toLocalTime()} [$level][$tag] : $content")
+        }
     }
 
     override fun v(tag: String?, msg: String) {

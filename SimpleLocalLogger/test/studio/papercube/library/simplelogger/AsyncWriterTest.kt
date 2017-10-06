@@ -1,5 +1,6 @@
 package studio.papercube.library.simplelogger
 
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.io.PrintWriter
@@ -21,6 +22,20 @@ class AsyncWriterTest {
                 (1..1000).joinToString(separator = "") { it.toString() },
                 stringWriter.toString()
         )
+    }
+
+    @Test
+    fun testLock(){
+        val obj = Any()
+        Assert.assertTrue(!Thread.holdsLock(obj))
+        synchronized(obj) {
+            Assert.assertTrue(Thread.holdsLock(obj))
+            synchronized(obj) {
+                Assert.assertTrue(Thread.holdsLock(obj))
+            }
+            Assert.assertTrue(Thread.holdsLock(obj))
+        }
+        Assert.assertTrue(!Thread.holdsLock(obj))
     }
 
     private class StopWatch {

@@ -12,6 +12,8 @@ open class AsyncWriter(private val writer: Writer,
 
     private var isClosed = false
     private val taskQueue = LinkedTransferQueue<() -> Any?>()
+    @Volatile
+    private var troubleEncountered = false
     private val thread: Thread = Thread {
         val currentThread = Thread.currentThread()
         while (!currentThread.isInterrupted) {
@@ -19,6 +21,8 @@ open class AsyncWriter(private val writer: Writer,
                 taskQueue.take()()
             } catch (e: InterruptedException) {
                 break
+            } catch (e: IOException) {
+                setError()
             }
         }
     }
@@ -72,6 +76,24 @@ open class AsyncWriter(private val writer: Writer,
                     throw e
                 }
             }
+        }
+    }
+
+    fun checkError(): Boolean {
+        synchronized(lock) {
+            return troubleEncountered
+        }
+    }
+
+    fun clearError(){
+        synchronized(lock) {
+            troubleEncountered = false
+        }
+    }
+
+    fun setError(){
+        synchronized(lock) {
+            troubleEncountered = true
         }
     }
 
