@@ -3,32 +3,55 @@ package studio.papercube.library.fileassist
 import java.io.*
 import java.util.*
 
-open class DriveMarker private constructor(private val fileInDrive: File) {
+open class DriveMarker protected constructor(private val idStorageFile: File) {
     companion object {
         @JvmStatic private val randomHolder = Random()
-        @JvmStatic fun resolve(fileInDrive: File) = DriveMarker(fileInDrive).apply { resolve() }
+        @JvmStatic
+        fun resolve(fileInDrive: File) = DriveMarker.inDrive(fileInDrive).apply { resolve() }
+
+        @JvmStatic
+        fun inDirectory(dir: File): DriveMarker {
+            return DriveMarker(File(dir, ".volumeId"))
+        }
+
+        @JvmStatic
+        fun inDrive(file: File): DriveMarker {
+            return inDirectory(File("${file.label}:\\"))
+        }
     }
 
     protected var idLength = 3
 
-    private val idStorageFile: File = File("${fileInDrive.label}:/.volumeId")
-    private var id: ByteArray? = ByteArray(0)
+    private var id: ByteArray? = null
 
     init {
 
     }
 
-    open fun resolve() {
-        id = try {
+    /**
+     * @throws IOException if there's a problem with IO
+     */
+    open fun resolve(): ByteArray {
+        val newId:ByteArray = try {
             if (idStorageFile.exists()) readMultiByteID()
             else allocateNewID()
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             try {
                 allocateNewID()
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                null
+            } catch (eAlloc: Exception) {
+                eAlloc.addSuppressed(e)
+                throw eAlloc
             }
+        }
+        id = newId
+        return newId
+    }
+
+    open fun tryResolve(): ByteArray? {
+        return try {
+            resolve()
+        } catch (e: Exception) {
+            null
         }
     }
 
@@ -43,7 +66,7 @@ open class DriveMarker private constructor(private val fileInDrive: File) {
     protected fun readMultiByteID(): ByteArray {
         DataInputStream(FileInputStream(idStorageFile)).use { input ->
             val bytes = ByteArray(idLength)
-            for (i in 0..idLength - 1) {
+            for (i in 0 until idLength) {
                 bytes[i] = input.readByte()
             }
 
@@ -65,7 +88,7 @@ open class DriveMarker private constructor(private val fileInDrive: File) {
         }
     }
 
-    protected fun ByteArray.encodeHexString(separator: String = ""):String {
+    protected fun ByteArray.encodeHexString(separator: String = ""): String {
         val hexValues = "0123456789ABCDEF"
         return this.map {
             hexValues[it.toInt() ushr 8 and 0xF].toString() +

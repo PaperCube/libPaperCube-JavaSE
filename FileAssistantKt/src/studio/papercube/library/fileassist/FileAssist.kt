@@ -7,7 +7,7 @@ import javax.swing.filechooser.FileSystemView
 private val illegalFileNameRegex = Pattern.compile("[\\\\|?:<>\"/*]").toRegex()
 
 fun File.getVolumeLabel(): String {
-    return FileSystemView.getFileSystemView().getSystemDisplayName(toRootDirectory())
+    return FileSystemView.getFileSystemView().getSystemDisplayName(toRootDirectory()).takeUnless { it.isBlank() } ?: "Unknown Drive Label"
 }
 
 @PlatformSpecific(Platform.WINDOWS)
