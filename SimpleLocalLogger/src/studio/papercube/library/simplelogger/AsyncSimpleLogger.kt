@@ -12,9 +12,9 @@ open class AsyncSimpleLogger(writer: Writer) : Logger() {
 
     override fun log(logEvent: LogEvent) {
         lock.withLock {
-            if(!enabled) return
+            if (!enabled) return
             val (time, level, content, tag) = logEvent
-            printWriter.println("#-- ${time.toLocalDate()} ${time.toLocalTime()} [$level][$tag] : $content")
+            printWriter.println("#-- ${time.toLocalDate()} ${TimeFormatter.formatTime(time)} [$level][$tag] : $content")
         }
     }
 
