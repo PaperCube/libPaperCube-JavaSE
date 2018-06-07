@@ -18,6 +18,15 @@ open class DriveMarker protected constructor(private val idStorageFile: File) {
         fun inDrive(file: File): DriveMarker {
             return inDirectory(File("${file.label}:\\"))
         }
+
+        @JvmStatic
+        fun ByteArray.encodeHexString(separator: String = ""): String {
+            val hexValues = "0123456789ABCDEF"
+            return this.map {
+                hexValues[it.toInt() ushr 4 and 0xF].toString() +
+                        hexValues[it.toInt() and 0xF].toString()
+            }.joinToString(separator)
+        }
     }
 
     protected var idLength = 3
@@ -88,13 +97,7 @@ open class DriveMarker protected constructor(private val idStorageFile: File) {
         }
     }
 
-    protected fun ByteArray.encodeHexString(separator: String = ""): String {
-        val hexValues = "0123456789ABCDEF"
-        return this.map {
-            hexValues[it.toInt() ushr 8 and 0xF].toString() +
-                    hexValues[it.toInt() and 0xF].toString()
-        }.joinToString(separator)
-    }
+
 
 
 }
