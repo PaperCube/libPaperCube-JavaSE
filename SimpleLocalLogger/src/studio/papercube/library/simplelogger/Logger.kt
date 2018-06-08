@@ -12,23 +12,23 @@ abstract class Logger {
     abstract fun e(tag: String?, msg: String)
 
     open fun v(msg: String) {
-        v("", msg)
+        v(getCallerName(), msg)
     }
 
     open fun i(msg: String) {
-        i("", msg)
+        i(getCallerName(), msg)
     }
 
     open fun w(msg: String) {
-        w("", msg)
+        w(getCallerName(), msg)
     }
 
     open fun e(msg: String) {
-        e("", msg)
+        e(getCallerName(), msg)
     }
 
     open fun e(e: Throwable) {
-        e("", e.detailedString)
+        e(getCallerName(), e.detailedString)
     }
 
     open fun e(tag: String? = null, msg: String? = null, e: Throwable) {
@@ -49,6 +49,13 @@ abstract class Logger {
             printWriter.close()
             return stringWriter.toString()
         }
+
+    private fun getCallerName(): String {
+        val callerStacktrace = Thread.currentThread().stackTrace[3]
+        val callerClass = callerStacktrace.className.substringAfterLast('.')
+        val callerMethodName = callerStacktrace.methodName
+        return "$callerClass.$callerMethodName"
+    }
 
     abstract fun log(logEvent: LogEvent)
     open fun stop() {}
