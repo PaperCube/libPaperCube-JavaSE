@@ -20,4 +20,11 @@ object TimeFormatter{
     fun formatTime(localDateTime: LocalDateTime): String {
         return formatTime(localDateTime.toLocalTime())
     }
+
+    val currentTimeDividedWithHyphens:String get(){
+        val time = LocalTime.now()
+        with(time){
+            return "%02d-%02d-%02d.%03d".format(hour, minute, second, nano / 1_000_000)
+        }
+    }
 }
